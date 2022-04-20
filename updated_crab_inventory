@@ -17,6 +17,9 @@ namespace CrabadaFilter
             int startMineID = Int32.Parse(Console.ReadLine());
             Console.Write("Enter how many additional mines to scan: ");
             int numberOfMines = Int32.Parse(Console.ReadLine());
+            Console.Write("Enter the page limit: ");
+            int pageLimit = Int32.Parse(Console.ReadLine());
+
             //int numberOfMines = 5;
             //int startMineID = 4840793;
             int stopMineID = startMineID + numberOfMines;
@@ -27,10 +30,10 @@ namespace CrabadaFilter
                 {
                 
                     string address = filterOwnerAddress(i);
-                    int totalRecord = filterNoReinforceAddress(address);
+                    int totalRecord = filterNoReinforceAddress(address, pageLimit);
 
                     // added by Young
-                    int totalInventoryCrabs = checkInventoryCrab(address);
+                    int totalInventoryCrabs = checkInventoryCrab(address, pageLimit);
 
                     if (totalRecord == 0  && totalInventoryCrabs == 0)
                     {
@@ -64,13 +67,11 @@ namespace CrabadaFilter
             return ownerAddress;
         }
 
-
-
         // added by Young
-        public static int checkInventoryCrab(string address)
+        public static int checkInventoryCrab(string address, int pageLimit)
         {
             Thread.Sleep(2000);
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
+            string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit={pageLimit}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -89,10 +90,10 @@ namespace CrabadaFilter
         }
       
 
-        public static int filterNoReinforceAddress(string address)
+        public static int filterNoReinforceAddress(string address, int pageLimit)
         {
             Thread.Sleep(2000);
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
+            string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit={pageLimit}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
