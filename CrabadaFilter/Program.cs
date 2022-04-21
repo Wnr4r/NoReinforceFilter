@@ -23,8 +23,8 @@ namespace CrabadaFilter
             for (int i= startMineID; i<= stopMineID; i++ )
             {
                 string address = filterOwnerAddress(i);
-                //if address is empty, continue to next iteration
-                if (address == "") continue;
+                //if address is empty or miner has own crab for reinforcing, continue to next iteration
+                if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
                 int totalRecord = filterNoReinforceAddress(address);
                 if (totalRecord == 0)
                 {
@@ -32,7 +32,7 @@ namespace CrabadaFilter
                 }
 
             }
-            Console.WriteLine("\n Completed, press any key to exit");
+            Console.WriteLine("\n Completed, press enter to exit");
             Console.ReadLine();
         }
 
@@ -48,7 +48,8 @@ namespace CrabadaFilter
             var attackTeamID = stuff.result.attack_team_id;
             //Console.WriteLine(ownerAddress);
             //check to see that team is not looted
-            return (attackTeamID > 0) ? "" : ownerAddress;
+            //string.IsNullOrWhiteSpace(attackTeamID);
+            return (attackTeamID > 0) ? string.Empty : ownerAddress;
             //if (attackTeamID > 0)
             //{
             //    return "";
@@ -57,7 +58,7 @@ namespace CrabadaFilter
             //{
             //    return ownerAddress;
             //}
-            
+
         }
 
         public static int filterNoReinforceAddress(string address)
@@ -78,6 +79,37 @@ namespace CrabadaFilter
             return totalRecord;
         }
 
+        /// <summary>
+        /// Check if miner has own crab to reinforce.
+        /// </summary>
+        /// <param name="address">Wallet address.</param>
+        /// <returns>True if owner has crabs or address is invalid.</returns>
+        public static bool isCrabAvailable(string address)
+        {
+            bool ownerCrabAvailableStatus = false;
+            //check to see that address returned is valid
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                ownerCrabAvailableStatus = true;
+                return ownerCrabAvailableStatus;
+            }
+            //sleep to avoid ban
+            Thread.Sleep(1000);
+            string url = $"https://idle-api.crabada.com/public/idle/crabadas/can-join-team?user_address={address}";
+            var client = new WebClient();
+            client.Headers.Add("User-Agent: Other");
+            var content = client.DownloadString(url);
+            dynamic stuff = JObject.Parse(content);
+            int totalRecord = stuff.result.totalRecord;
+            if (totalRecord > 0)
+            {
+                ownerCrabAvailableStatus = true;
+            }
+            return ownerCrabAvailableStatus;
+        }
+
+
+
         //not used for now
         public static string queryAPI(string url )
         {
@@ -88,7 +120,7 @@ namespace CrabadaFilter
             var content = client.DownloadString(url);
             dynamic stuff = JObject.Parse(content);
             var totalRecord = stuff.result.totalRecord;
-            return "";
+            return string.Empty;
         }
      }
  }
