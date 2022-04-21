@@ -12,30 +12,40 @@ namespace CrabadaFilter
     {
         static void Main(string[] args)
         {
-            Console.Write("Enter starting mine ID: ");
-            int startMineID = Int32.Parse(Console.ReadLine());
-            Console.Write("Enter how many additional mines to scan: ");
-            int numberOfMines = Int32.Parse(Console.ReadLine());
-            //int numberOfMines = 5;
-            //int startMineID = 4840793;
-            int stopMineID = startMineID + numberOfMines;
-
-            for (int i= startMineID; i<= stopMineID; i++ )
+            string response = string.Empty;
+            do
             {
-                string address = filterOwnerAddress(i);
-                //if address is empty or miner has own crab for reinforcing, continue to next iteration
-                if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
-                int totalRecord = filterNoReinforceAddress(address);
-                if (totalRecord == 0)
-                {
-                    Console.WriteLine($"MineID: {i} \t OwnerAdress: {address}");
-                }
+                Console.Write("Enter starting mine ID: ");
+                int startMineID = Int32.Parse(Console.ReadLine());
+                Console.Write("Enter how many additional mines to scan: ");
+                int numberOfMines = Int32.Parse(Console.ReadLine());
+                //int numberOfMines = 5;
+                //int startMineID = 4840793;
+                int stopMineID = startMineID + numberOfMines;
 
-            }
-            Console.WriteLine("\n Completed, press enter to exit");
-            Console.ReadLine();
+                for (int i = startMineID; i <= stopMineID; i++)
+                {
+                    string address = filterOwnerAddress(i);
+                    //if address is empty or miner has own crab for reinforcing, continue to next iteration
+                    if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
+                    int totalRecord = filterNoReinforceAddress(address);
+                    if (totalRecord == 0)
+                    {
+                        Console.WriteLine($"MineID: {i} \t OwnerAdress: {address}");
+                    }
+
+                }
+                Console.WriteLine("\n Completed!!!!");
+                Console.Write("\n Do you wish to check another mine ID series? Type yes to continue: ");
+                response = Console.ReadLine();
+            } while (response.ToLower() == "yes");
         }
 
+        /// <summary>
+        /// Check wallet address of the miner.
+        /// </summary>
+        /// <param name="mineID">Mine ID.</param>
+        /// <returns>wallet address of the miner in the given mine ID.</returns>
         public static string filterOwnerAddress(int mineID)
         {
             //Thread.Sleep(2000);
@@ -61,6 +71,11 @@ namespace CrabadaFilter
 
         }
 
+        /// <summary>
+        /// Check if miner has own crab to reinforce.
+        /// </summary>
+        /// <param name="address">Wallet address.</param>
+        /// <returns>reinforcement history of the input address. 0 - means, no reinforement history</returns>
         public static int filterNoReinforceAddress(string address)
         {
             //check to see that address returned is valid
