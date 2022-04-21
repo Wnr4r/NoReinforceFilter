@@ -10,7 +10,6 @@ namespace CrabadaFilter
 {
     class Program
     {
-
         static void Main(string[] args)
         {
             Console.Write("Enter starting mine ID: ");
@@ -24,6 +23,7 @@ namespace CrabadaFilter
             for (int i= startMineID; i<= stopMineID; i++ )
             {
                 string address = filterOwnerAddress(i);
+                //if (address == "") break;
                 int totalRecord = filterNoReinforceAddress(address);
                 if (totalRecord == 0)
                 {
@@ -31,25 +31,41 @@ namespace CrabadaFilter
                 }
 
             }
-            Console.WriteLine("Completed, press any key to exit");
-            Console.ReadLine();
+            Console.WriteLine("\n Completed, press any key to exit");
+            //Console.ReadLine();
         }
 
         public static string filterOwnerAddress(int mineID)
         {
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
             dynamic stuff = JObject.Parse(content);
             string ownerAddress = stuff.result.owner;
+            var attackTeamID = stuff.result.attack_team_id;
             //Console.WriteLine(ownerAddress);
-            return ownerAddress;
+            //check to see that team is not looted
+            if (attackTeamID > 0)
+            {
+                return "";
+            }
+            else
+            {
+                return ownerAddress;
+            }
+            
         }
 
         public static int filterNoReinforceAddress(string address)
         {
+            //check to see that address returned is valid
+            if (address.Length != 42)
+            {
+                return -1;
+            }
+            //sleep to avoid ban
             Thread.Sleep(2000);
             string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
             var client = new WebClient();
@@ -58,14 +74,9 @@ namespace CrabadaFilter
             dynamic stuff = JObject.Parse(content);
             int totalRecord = stuff.result.totalRecord;
             return totalRecord;
-            //if (totalRecord == 0)
-            //{
-            //    Console.WriteLine(address);
-            //    return address;
-            //}
-            //return "";
         }
 
+        //not used for now
         public static string queryAPI(string url )
         {
             Thread.Sleep(2000);
@@ -76,30 +87,6 @@ namespace CrabadaFilter
             dynamic stuff = JObject.Parse(content);
             var totalRecord = stuff.result.totalRecord;
             return "";
-
         }
-
-
-        //this part is useless for now
-        static async Task RunAsync()
-        {
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("https://idle-api.crabada.com/");
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                // HTTP GET
-                HttpResponseMessage response = await client.GetAsync("public/idle/mine/4822351");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsAsync<string>();
-                    dynamic stuff = JObject.Parse(content);
-                }
-            }
-        }
-
-
-
      }
  }
