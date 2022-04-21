@@ -33,7 +33,7 @@ namespace CrabadaFilter
 
             }
             Console.WriteLine("\n Completed, press any key to exit");
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
         public static string filterOwnerAddress(int mineID)
@@ -68,7 +68,7 @@ namespace CrabadaFilter
                 return -1;
             }
             //sleep to avoid ban
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
