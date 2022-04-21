@@ -23,7 +23,8 @@ namespace CrabadaFilter
             for (int i= startMineID; i<= stopMineID; i++ )
             {
                 string address = filterOwnerAddress(i);
-                //if (address == "") break;
+                //if address is empty, continue to next iteration
+                if (address == "") continue;
                 int totalRecord = filterNoReinforceAddress(address);
                 if (totalRecord == 0)
                 {
@@ -47,14 +48,15 @@ namespace CrabadaFilter
             var attackTeamID = stuff.result.attack_team_id;
             //Console.WriteLine(ownerAddress);
             //check to see that team is not looted
-            if (attackTeamID > 0)
-            {
-                return "";
-            }
-            else
-            {
-                return ownerAddress;
-            }
+            return (attackTeamID > 0) ? "" : ownerAddress;
+            //if (attackTeamID > 0)
+            //{
+            //    return "";
+            //}
+            //else
+            //{
+            //    return ownerAddress;
+            //}
             
         }
 
