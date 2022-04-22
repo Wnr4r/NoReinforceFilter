@@ -39,6 +39,7 @@ namespace CrabadaFilter
                         //if address is empty or miner has own crab for reinforcing, continue to next iteration
                         if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
                         
+                        //check to see if last reinforcement time is greater or equal to user required time.
                         if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
                         {
                                 Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
@@ -47,9 +48,11 @@ namespace CrabadaFilter
 
                     catch (Exception e)
                     {
-                        Console.WriteLine("Error encountered");
-                    } 
+                        Console.WriteLine($"Error encountered: {e.Message}");
+                    }
                     
+                    //sleep after each loop
+                    Thread.Sleep(1000);
                 }
 
                 Console.WriteLine("\n Completed!!!!");
@@ -101,14 +104,19 @@ namespace CrabadaFilter
                 return -1;
             }
             //sleep to avoid ban
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
             DateTime currentDate = DateTime.Now;
             string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
             dynamic stuff = JObject.Parse(content);
-
+            //check to see if wallet has ever been to tarvern
+            var totalRecord = stuff.result.totalRecord;
+            if(totalRecord <= 0)
+            {
+                return -1;
+            }
             double lastReinforcementTime = stuff.result.data[0].transaction_time;
             DateTime lastReinforcementTimeInHRF  = new DateTime(1970, 1, 1, 0, 0, 0, 0); //from start epoch time in HRF:Human Readable Forrmat
             lastReinforcementTimeInHRF = lastReinforcementTimeInHRF.AddSeconds(lastReinforcementTime); // update reinforcement using the latest tran_time
@@ -133,7 +141,7 @@ namespace CrabadaFilter
                 return ownerCrabAvailableStatus;
             }
             //sleep to avoid ban
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
             string url = $"https://idle-api.crabada.com/public/idle/crabadas/can-join-team?user_address={address}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
@@ -156,7 +164,7 @@ namespace CrabadaFilter
         public static string minerFaction(int mineID)
         {
         
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
             string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
@@ -171,7 +179,7 @@ namespace CrabadaFilter
         //not used for now
         public static string queryAPI(string url )
         {
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             //string urlu = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
