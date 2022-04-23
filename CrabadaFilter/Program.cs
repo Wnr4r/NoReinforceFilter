@@ -1,10 +1,9 @@
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
+using System;
+using System.IO;
+using System.Net;
+using System.Threading;
 
 namespace CrabadaFilter
 {
@@ -12,6 +11,12 @@ namespace CrabadaFilter
     {
         static void Main(string[] args)
         {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false);
+
+            var config = builder.Build();
+
 
             string response = string.Empty;
             do
@@ -21,36 +26,36 @@ namespace CrabadaFilter
 
                 Console.Write("Enter how many additional mines to scan: ");
                 int numberOfMines = Int32.Parse(Console.ReadLine());
-                
+
                 Console.Write("Enter last reinforcement time (Hours) threshold to query reinforcement history: ");
                 double minReinforcemnentTransTimeHr = Double.Parse(Console.ReadLine());
-                
+
                 int stopMineID = startMineID + numberOfMines;
 
                 for (int i = startMineID; i <= stopMineID; i++)
                 {
-                    
+
                     try
                     {
                         string address = filterOwnerAddress(i);
                         string crabFaction = minerFaction(i);
                         double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
-                        
+
                         //if address is empty or miner has own crab for reinforcing, continue to next iteration
                         if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
-                        
+
                         //check to see if last reinforcement time is greater or equal to user required time.
                         if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
                         {
-                                Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
-                        } 
-                    } 
+                            Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
+                        }
+                    }
 
                     catch (Exception e)
                     {
                         Console.WriteLine($"Error encountered: {e.Message}");
                     }
-                    
+
                     //sleep after each loop
                     Thread.Sleep(1000);
                 }
@@ -113,15 +118,15 @@ namespace CrabadaFilter
             dynamic stuff = JObject.Parse(content);
             //check to see if wallet has ever been to tarvern
             var totalRecord = stuff.result.totalRecord;
-            if(totalRecord <= 0)
+            if (totalRecord <= 0)
             {
                 return -1;
             }
             double lastReinforcementTime = stuff.result.data[0].transaction_time;
-            DateTime lastReinforcementTimeInHRF  = new DateTime(1970, 1, 1, 0, 0, 0, 0); //from start epoch time in HRF:Human Readable Forrmat
+            DateTime lastReinforcementTimeInHRF = new DateTime(1970, 1, 1, 0, 0, 0, 0); //from start epoch time in HRF:Human Readable Forrmat
             lastReinforcementTimeInHRF = lastReinforcementTimeInHRF.AddSeconds(lastReinforcementTime); // update reinforcement using the latest tran_time
-            double lastTransacTimeDiffHr =  Math.Round(((currentDate - lastReinforcementTimeInHRF).TotalDays) * 24);
-            
+            double lastTransacTimeDiffHr = Math.Round(((currentDate - lastReinforcementTimeInHRF).TotalDays) * 24);
+
             // calibrate epoch to HRF conversion
             return lastTransacTimeDiffHr - 3;
         }
@@ -163,7 +168,7 @@ namespace CrabadaFilter
         /// <returns>Miner's crab faction</returns>
         public static string minerFaction(int mineID)
         {
-        
+
             //Thread.Sleep(1000);
             string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
             var client = new WebClient();
@@ -173,11 +178,11 @@ namespace CrabadaFilter
             string teamFaction = stuff.result.defense_team_faction;
 
             return teamFaction;
-            
+
         }
 
         //not used for now
-        public static string queryAPI(string url )
+        public static string queryAPI(string url)
         {
             //Thread.Sleep(2000);
             //string urlu = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
@@ -188,5 +193,5 @@ namespace CrabadaFilter
             var totalRecord = stuff.result.totalRecord;
             return string.Empty;
         }
-     }
- }
+    }
+}
