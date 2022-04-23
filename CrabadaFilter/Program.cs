@@ -50,7 +50,7 @@ namespace CrabadaFilter
 
                     catch (Exception e)
                     {
-                        Console.WriteLine($"Error encountered: {e.Message}");
+                        Console.WriteLine($"Error encountered: {e}");
                     }
                     
                     //sleep after each loop
@@ -97,37 +97,7 @@ namespace CrabadaFilter
         /// Check the last time that miner reinforced.
         /// </summary>
         /// <param name="address">Wallet address.</param>
-        /// <returns>last time miner reinforced. -1 - means, address sent is invalid or miner has never reinforced</returns>// in game crabs
-        public static bool isCrabsInGame(string address)
-        {
-            bool ownerCrabInGameStatus = false;
-
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                ownerCrabInGameStatus  = true;
-                return ownerCrabInGameStatus;
-            }
-
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/in-game?user_address={address}&page=1&limit=15&order=desc&orderBy=battle_point";
-            var client = new WebClient();
-            client.Headers.Add("User-Agent: Other");
-            var content = client.DownloadString(url);
-            dynamic stuff = JObject.Parse(content);
-            int totalRecord = stuff.result.totalRecord;
-
-            for (int i=0; i < totalRecord; i++)
-            {
-                string teamID = stuff.result.data[i].team_id;
-                //Console.WriteLine($" teamID: {teamID}");
-                if(String.IsNullOrEmpty(teamID))
-                {
-                    ownerCrabInGameStatus = true;
-                }
-            }
-
-            return ownerCrabInGameStatus;
-            
-        }
+        /// <returns>last time miner reinforced. -1 - means, address sent is invalid or miner has never reinforced</returns>
         public static double filterNoReinforceAddress(string address)
         {
             //check to see that address returned is valid
@@ -157,7 +127,6 @@ namespace CrabadaFilter
             return lastTransacTimeDiffHr;
         }
 
-        
         /// <summary>
         /// Check if miner has own crab to reinforce.
         /// </summary>
@@ -180,20 +149,18 @@ namespace CrabadaFilter
             var content = client.DownloadString(url);
             dynamic stuff = JObject.Parse(content);
             int totalRecord = stuff.result.totalRecord;
+            
 
-
+            // the only updated area 23-04-2022
             if (totalRecord > 0 || areCrabsInGame(address) == true)
             {
                 ownerCrabAvailableStatus = true;
             }
-
-
             return ownerCrabAvailableStatus;
-
-            
         }
 
-        // checks in game crabs
+
+        // recently added function - 23-04-2022 : checks for crabs in game
         public static bool areCrabsInGame(string address)
         {
             bool ownerCrabInGameStatus = false;
@@ -224,6 +191,7 @@ namespace CrabadaFilter
             return ownerCrabInGameStatus;
             
         }
+
 
         /// <summary>
         /// Checks miner's crab faction
