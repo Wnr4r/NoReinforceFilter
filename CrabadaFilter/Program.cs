@@ -32,14 +32,16 @@ namespace CrabadaFilter
                     
                     try
                     {
+                        //Console.WriteLine($"Currently Scanning Mine: {i}");
+                        //check for owner address and see if it has not yet been looted
                         string address = filterOwnerAddress(i);
-                        string crabFaction = minerFaction(i);
-                        double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
-                        
                         //if address is empty or miner has own crab for reinforcing, continue to next iteration
                         if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
-                        
-                        //check to see if last reinforcement time is greater or equal to user required time.
+                        //get miner's faction
+                        string crabFaction = minerFaction(i);
+                        //get last time miner reinforced
+                        double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
+                        //check to see if last reinforcement time is greater or equal to user specified time.
                         if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
                         {
                                 Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
@@ -92,10 +94,10 @@ namespace CrabadaFilter
         }
 
         /// <summary>
-        /// Check if miner has own crab to reinforce.
+        /// Check the last time that miner reinforced.
         /// </summary>
         /// <param name="address">Wallet address.</param>
-        /// <returns>reinforcement history of the input address. 0 - means, no reinforement history</returns>
+        /// <returns>last time miner reinforced. -1 - means, address sent is invalid or miner has never reinforced</returns>
         public static double filterNoReinforceAddress(string address)
         {
             //check to see that address returned is valid
@@ -105,7 +107,7 @@ namespace CrabadaFilter
             }
             //sleep to avoid ban
             //Thread.Sleep(1000);
-            DateTime currentDate = DateTime.Now;
+            DateTime currentDate = DateTime.UtcNow;
             string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
@@ -122,8 +124,7 @@ namespace CrabadaFilter
             lastReinforcementTimeInHRF = lastReinforcementTimeInHRF.AddSeconds(lastReinforcementTime); // update reinforcement using the latest tran_time
             double lastTransacTimeDiffHr =  Math.Round(((currentDate - lastReinforcementTimeInHRF).TotalDays) * 24);
             
-            // calibrate epoch to HRF conversion
-            return lastTransacTimeDiffHr - 3;
+            return lastTransacTimeDiffHr;
         }
 
         /// <summary>
@@ -171,7 +172,6 @@ namespace CrabadaFilter
             var content = client.DownloadString(url);
             dynamic stuff = JObject.Parse(content);
             string teamFaction = stuff.result.defense_team_faction;
-
             return teamFaction;
             
         }
