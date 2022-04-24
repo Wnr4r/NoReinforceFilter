@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CrabadaFilter.Extensions;
+using CrabadaFilter.Models;
 using CrabadaFilter.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -52,11 +53,12 @@ namespace CrabadaFilter
                     {
                         //Console.WriteLine($"Currently Scanning Mine: {i}");
                         //check for owner address and see if it has not yet been looted
-                        string address = await FilterOwnerAddress(i);
+                        var mineDetails = await FilterOwnerAddress(i);
+                        var address = mineDetails.Owner;
                         //if address is empty or miner has own crab for reinforcing, continue to next iteration
                         if (string.IsNullOrWhiteSpace(address) || await IsCrabAvailable(address)) continue;
                         //get miner's faction
-                        string crabFaction = MinerFaction(i);
+                        var crabFaction = mineDetails.Defense_Team_Faction;
                         //get last time miner reinforced
                         double lastReinforceTimeDiffHHour = await FilterNoReinforceAddress(address);
                         //check to see if last reinforcement time is greater or equal to user specified time.
@@ -86,18 +88,11 @@ namespace CrabadaFilter
         /// </summary>
         /// <param name="mineID">Mine ID.</param>
         /// <returns>wallet address of the miner in the given mine ID.</returns>
-        public static async Task<string> FilterOwnerAddress(int mineID)
+        public static async Task<MineDto> FilterOwnerAddress(int mineID)
         {
             var crabadaService = _serviceProvider.GetService<ICrabadaService>();
-
-            Debug.Assert(crabadaService != null, nameof(crabadaService) + " != null");
-            var mineResponse = await crabadaService.GetMineDetailsAsync(5148615);
-
-            var ownerAddress = mineResponse.Owner;
-            var attackTeamId = mineResponse.Attack_Team_Id;
-
-            return attackTeamId > 0 ? string.Empty : ownerAddress;
-
+            var response = await crabadaService.GetMineDetailsAsync(mineID);
+            return response;
         }
 
         /// <summary>
@@ -156,26 +151,6 @@ namespace CrabadaFilter
                 ownerCrabAvailableStatus = true;
             }
             return ownerCrabAvailableStatus;
-        }
-
-
-        /// <summary>
-        /// Checks miner's crab faction
-        /// </summary>
-        /// <param name="mineID">Miner's ID</param>
-        /// <returns>Miner's crab faction</returns>
-        public static string MinerFaction(int mineID)
-        {
-
-            //Thread.Sleep(1000);
-            string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
-            var client = new WebClient();
-            client.Headers.Add("User-Agent: Other");
-            var content = client.DownloadString(url);
-            dynamic stuff = JObject.Parse(content);
-            string teamFaction = stuff.result.defense_team_faction;
-            return teamFaction;
-
         }
 
         //not used for now

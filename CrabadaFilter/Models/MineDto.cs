@@ -1,7 +1,9 @@
-﻿namespace CrabadaFilter.Models {
+﻿using System;
+
+namespace CrabadaFilter.Models {
     public class MineDto
     {
-        public string Owner { get; set; }
+        public string Owner { get; set; } = string.Empty;
 
         public int Team_Id { get; set; }
 
