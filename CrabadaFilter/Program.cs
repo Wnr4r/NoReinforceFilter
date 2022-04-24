@@ -1,22 +1,31 @@
-using Microsoft.Extensions.Configuration;
+using CrabadaFilter.Extensions;
+using CrabadaFilter.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
 using System;
-using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace CrabadaFilter
 {
     class Program
     {
-        static void Main(string[] args)
+        private static IServiceProvider _serviceProvider;
+
+        static async Task Main(string[] args)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false);
+            var host = CreateHostBuilder(args).Build();
 
-            var config = builder.Build();
+            // await host.RunAsync();
+            _serviceProvider = host.Services;
 
+            var crabadaService = _serviceProvider.GetService<ICrabadaService>();
+            if (crabadaService != null)
+            {
+               await crabadaService.GetMineDetailsAsync(5148615);
+            }
 
             string response = string.Empty;
             do
@@ -37,12 +46,12 @@ namespace CrabadaFilter
 
                     try
                     {
-                        string address = filterOwnerAddress(i);
-                        string crabFaction = minerFaction(i);
-                        double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
+                        string address = FilterOwnerAddress(i);
+                        string crabFaction = MinerFaction(i);
+                        double lastReinforceTimeDiffHHour = FilterNoReinforceAddress(address);
 
                         //if address is empty or miner has own crab for reinforcing, continue to next iteration
-                        if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
+                        if (string.IsNullOrWhiteSpace(address) || IsCrabAvailable(address)) continue;
 
                         //check to see if last reinforcement time is greater or equal to user required time.
                         if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
@@ -63,7 +72,7 @@ namespace CrabadaFilter
                 Console.WriteLine("\n Completed!!!!");
                 Console.Write("\n Do you wish to check another mine ID series? Type yes to continue: ");
                 response = Console.ReadLine();
-            } while (response.ToLower() == "yes");
+            } while (response?.ToLower() == "yes");
         }
 
         /// <summary>
@@ -71,7 +80,7 @@ namespace CrabadaFilter
         /// </summary>
         /// <param name="mineID">Mine ID.</param>
         /// <returns>wallet address of the miner in the given mine ID.</returns>
-        public static string filterOwnerAddress(int mineID)
+        public static string FilterOwnerAddress(int mineID)
         {
             //Thread.Sleep(2000);
             string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
@@ -81,18 +90,9 @@ namespace CrabadaFilter
             dynamic stuff = JObject.Parse(content);
             string ownerAddress = stuff.result.owner;
             var attackTeamID = stuff.result.attack_team_id;
-            //Console.WriteLine(ownerAddress);
             //check to see that team is not looted
             //string.IsNullOrWhiteSpace(attackTeamID);
             return (attackTeamID > 0) ? string.Empty : ownerAddress;
-            //if (attackTeamID > 0)
-            //{
-            //    return "";
-            //}
-            //else
-            //{
-            //    return ownerAddress;
-            //}
 
         }
 
@@ -101,15 +101,14 @@ namespace CrabadaFilter
         /// </summary>
         /// <param name="address">Wallet address.</param>
         /// <returns>reinforcement history of the input address. 0 - means, no reinforement history</returns>
-        public static double filterNoReinforceAddress(string address)
+        public static double FilterNoReinforceAddress(string address)
         {
             //check to see that address returned is valid
             if (address.Length != 42)
             {
                 return -1;
             }
-            //sleep to avoid ban
-            //Thread.Sleep(1000);
+
             DateTime currentDate = DateTime.Now;
             string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2";
             var client = new WebClient();
@@ -136,7 +135,7 @@ namespace CrabadaFilter
         /// </summary>
         /// <param name="address">Wallet address.</param>
         /// <returns>True if owner has crabs or address is invalid.</returns>
-        public static bool isCrabAvailable(string address)
+        public static bool IsCrabAvailable(string address)
         {
             bool ownerCrabAvailableStatus = false;
             //check to see that address returned is valid
@@ -145,8 +144,7 @@ namespace CrabadaFilter
                 ownerCrabAvailableStatus = true;
                 return ownerCrabAvailableStatus;
             }
-            //sleep to avoid ban
-            //Thread.Sleep(1000);
+
             string url = $"https://idle-api.crabada.com/public/idle/crabadas/can-join-team?user_address={address}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
@@ -166,10 +164,9 @@ namespace CrabadaFilter
         /// </summary>
         /// <param name="mineID">Miner's ID</param>
         /// <returns>Miner's crab faction</returns>
-        public static string minerFaction(int mineID)
+        public static string MinerFaction(int mineID)
         {
 
-            //Thread.Sleep(1000);
             string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
@@ -182,9 +179,8 @@ namespace CrabadaFilter
         }
 
         //not used for now
-        public static string queryAPI(string url)
+        public static string QueryAPI(string url)
         {
-            //Thread.Sleep(2000);
             //string urlu = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
@@ -193,5 +189,9 @@ namespace CrabadaFilter
             var totalRecord = stuff.result.totalRecord;
             return string.Empty;
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .UseStartup<Startup>();
     }
 }
