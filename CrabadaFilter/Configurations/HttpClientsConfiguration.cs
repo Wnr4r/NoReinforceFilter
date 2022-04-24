@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http.Headers;
 using CrabadaFilter.AppSettings;
+using CrabadaFilter.HttpClients;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CrabadaFilter.Configurations {

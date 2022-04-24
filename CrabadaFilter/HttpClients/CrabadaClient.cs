@@ -1,12 +1,12 @@
-﻿using System;
+﻿using CrabadaFilter.Common;
+using CrabadaFilter.Models;
 using System.Net.Http;
 using System.Threading.Tasks;
-using CrabadaFilter.Common;
-using CrabadaFilter.Models;
-using Newtonsoft.Json.Serialization;
 
-namespace CrabadaFilter {
-    public class CrabadaClient  : ICrabadaClient {
+namespace CrabadaFilter.HttpClients
+{
+    public class CrabadaClient : ICrabadaClient
+    {
         private readonly HttpClient _httpClient;
 
         public CrabadaClient(HttpClient httpClient)

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using CrabadaFilter.Models;
 
-namespace CrabadaFilter
+namespace CrabadaFilter.HttpClients
 {
     public interface ICrabadaClient
     {
