@@ -12,25 +12,26 @@ namespace CrabadaFilter.Services {
             _crabadaClient = crabadaClient;
         }
 
-        public async Task<MineResponse> GetMineDetailsAsync(int mineId)
+        public async Task<MineDto> GetMineDetailsAsync(int mineId)
         {
             var mineDetails = await _crabadaClient.GetMineDetailsAsync(mineId);
 
-            return mineDetails.Result;
+            return mineDetails;
         }
 
-        public async Task<object> GetLendingHistoryAsync(string address)
+        public async Task<CanJoinDto> GetCanJoinTeamInfoAsync(string address)
+        {
+            var canJoinTeamInfo = await _crabadaClient.GetCanJoinTeamInfoAsync(address);
+
+            return canJoinTeamInfo;
+        }
+
+        public async Task<LendingHistoryDto> GetLendingHistoryAsync(string address)
         {
             var historyDetails = await _crabadaClient.GetLendingHistoryAsync(address);
 
             return historyDetails;
         }
 
-        public async Task<object> GetCanJoinTeamInfoAsync(string address)
-        {
-            var canJoinTeamInfo = await _crabadaClient.GetCanJoinTeamInfoAsync(address);
-
-            return canJoinTeamInfo;
-        }
     }
 }

@@ -10,20 +10,21 @@ namespace CrabadaFilter.Services
         /// </summary>
         /// <param name="mineId">MineId</param>
         /// <returns></returns>
-        Task<MineResponse> GetMineDetailsAsync(int mineId);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="address">Wallet address</param>
-        /// <returns></returns>
-        Task<object> GetLendingHistoryAsync(string address);
+        Task<MineDto> GetMineDetailsAsync(int mineId);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="address">Wallet Address</param>
         /// <returns></returns>
-        Task<object> GetCanJoinTeamInfoAsync(string address);
+        Task<CanJoinDto> GetCanJoinTeamInfoAsync(string address);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="address">Wallet address</param>
+        /// <returns></returns>
+        Task<LendingHistoryDto> GetLendingHistoryAsync(string address);
+
     }
 }

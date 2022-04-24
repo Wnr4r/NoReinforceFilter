@@ -1,6 +1,5 @@
-﻿namespace CrabadaFilter.Models
-{
-    public class MineResponse
+﻿namespace CrabadaFilter.Models {
+    public class MineDto
     {
         public string Owner { get; set; }
 

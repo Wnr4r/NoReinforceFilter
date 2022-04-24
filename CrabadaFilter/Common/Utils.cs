@@ -10,7 +10,7 @@ namespace CrabadaFilter.Common {
                 result = JsonConvert.DeserializeObject<T>(obj);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 result = default;
                 return false;

@@ -14,7 +14,7 @@ namespace CrabadaFilter.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<DataAnswer<MineResponse>> GetMineDetailsAsync(int mineId)
+        public async Task<MineDto> GetMineDetailsAsync(int mineId)
         {
             var response = await _httpClient.GetAsync($"mine/{mineId}");
 
@@ -24,40 +24,40 @@ namespace CrabadaFilter.HttpClients
             // if (!response.IsSuccessStatusCode) return DataAnswer<MineResponse>
 
 
-            content.TryDeserializeObject(out DataAnswer<MineResponse> result);
+            content.TryDeserializeObject(out DataAnswer<MineDto> result);
 
-            return result;
+            return result.Result;
 
         }
 
-        public async Task<object> GetLendingHistoryAsync(string address)
-        {
-            var response = await _httpClient.GetAsync($"crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2");
-
-            var content = await response.Content.ReadAsStringAsync();
-
-
-            if (!response.IsSuccessStatusCode) return new MineResponse();
-
-
-            content.TryDeserializeObject(out MineResponse result);
-
-            return result;
-        }
-
-        public async Task<object> GetCanJoinTeamInfoAsync(string address)
+        public async Task<CanJoinDto> GetCanJoinTeamInfoAsync(string address)
         {
             var response = await _httpClient.GetAsync($"crabadas/can-join-team?user_address={address}");
 
             var content = await response.Content.ReadAsStringAsync();
 
 
-            if (!response.IsSuccessStatusCode) return new MineResponse();
+            if (!response.IsSuccessStatusCode) return new CanJoinDto();
 
 
-            content.TryDeserializeObject(out MineResponse result);
+            content.TryDeserializeObject(out DataAnswer<CanJoinDto> result);
 
-            return result;
+            return result.Result;
+        }
+
+        public async Task<LendingHistoryDto> GetLendingHistoryAsync(string address)
+        {
+            var response = await _httpClient.GetAsync($"crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2");
+
+            var content = await response.Content.ReadAsStringAsync();
+
+
+            if (!response.IsSuccessStatusCode) return new LendingHistoryDto();
+
+
+            content.TryDeserializeObject(out DataAnswer<LendingHistoryDto> result);
+
+            return result.Result;
         }
     }
 }
