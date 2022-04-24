@@ -3,6 +3,7 @@ using CrabadaFilter.Configurations;
 using CrabadaFilter.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace CrabadaFilter {
     public class Startup
@@ -23,6 +24,14 @@ namespace CrabadaFilter {
             // Configure your services here
             services.RegisterHttpClients(_crabadaSettings);
             services.AddSingleton<ICrabadaService, CrabadaService>();
+            services.AddLogging(
+                builder =>
+                {
+                    builder.AddFilter("Microsoft", LogLevel.None)
+                        .AddFilter("System", LogLevel.None)
+                        .AddFilter("NToastNotify", LogLevel.None)
+                        .AddConsole();
+                });
         }
     }
 }

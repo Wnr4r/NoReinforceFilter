@@ -1,14 +1,15 @@
-using Newtonsoft.Json.Linq;
-using System;
-using System.Diagnostics;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using CrabadaFilter.Extensions;
 using CrabadaFilter.Models;
 using CrabadaFilter.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CrabadaFilter
 {
@@ -119,9 +120,9 @@ namespace CrabadaFilter
                 return -1;
             }
 
-            var lastReinforcementTime = response.Data[0].Transaction_Time;  
-            var lastReinforcementTimeInHrf = DateTimeOffset.FromUnixTimeSeconds(lastReinforcementTime);
-           // DateTime lastReinforcementTimeInHRF = new DateTime(1970, 1, 1, 0, 0, 0, 0); //from start epoch time in HRF:Human Readable Forrmat
+            var lastReinforcementTime = response.Data[0].Transaction_Time;
+            //var lastReinforcementTimeInHrf = DateTimeOffset.FromUnixTimeSeconds(lastReinforcementTime);
+            DateTime lastReinforcementTimeInHrf = new DateTime(1970, 1, 1, 0, 0, 0, 0); //from start epoch time in HRF:Human Readable Forrmat
             lastReinforcementTimeInHrf = lastReinforcementTimeInHrf.AddSeconds(lastReinforcementTime); // update reinforcement using the latest tran_time
             double lastTransacTimeDiffHr = Math.Round((currentDate - lastReinforcementTimeInHrf).TotalDays) * 24;
 
