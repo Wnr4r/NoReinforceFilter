@@ -32,7 +32,7 @@ namespace CrabadaFilter
                     
                     try
                     {
-                        Console.WriteLine($"Currently Scanning Mine: {i}");
+                        //Console.WriteLine($"Currently Scanning Mine: {i}");
                         //check for owner address and see if it has not yet been looted
                         string address = filterOwnerAddress(i);
                         //if address is empty or miner has own crab for reinforcing, continue to next iteration
