@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 
 namespace CrabadaFilter.Models {
+    /// <summary>
+    /// Lending History Response model
+    /// https://idle-api.crabada.com/public/idle/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=
+    /// </summary>
     public class LendingHistoryDto : PaginationDto
     {
 

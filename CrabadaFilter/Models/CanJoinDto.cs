@@ -2,6 +2,10 @@
 
 namespace CrabadaFilter.Models
 {
+    /// <summary>
+    /// Can join team response model
+    /// https://idle-api.crabada.com/public/idle/crabadas/can-join-team?user_address={address}
+    /// </summary>
     public class CanJoinDto : PaginationDto
     {
         public IList<CanJoinResponse> Data { get; set; }

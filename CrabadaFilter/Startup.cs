@@ -29,7 +29,6 @@ namespace CrabadaFilter {
                 {
                     builder.AddFilter("Microsoft", LogLevel.None)
                         .AddFilter("System", LogLevel.None)
-                        .AddFilter("NToastNotify", LogLevel.None)
                         .AddConsole();
                 });
         }

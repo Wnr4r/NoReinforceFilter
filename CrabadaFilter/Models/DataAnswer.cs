@@ -1,5 +1,4 @@
-﻿namespace CrabadaFilter.Models
-{
+﻿namespace CrabadaFilter.Models {
     public class DataAnswer<T>
     {
         public string Error_Code { get; set; }

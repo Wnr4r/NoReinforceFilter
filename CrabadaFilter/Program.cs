@@ -24,15 +24,6 @@ namespace CrabadaFilter
             // await host.RunAsync();
             _serviceProvider = host.Services;
 
-            //var crabadaService = _serviceProvider.GetService<ICrabadaService>();
-            //if (crabadaService != null)
-            //{
-            //    var mine = await crabadaService.GetMineDetailsAsync(5240125);
-            //    await crabadaService.GetCanJoinTeamInfoAsync(mine.Owner);
-
-            //    await crabadaService.GetLendingHistoryAsync(mine.Owner);
-            //}
-
             string response = string.Empty;
             do
             {
@@ -43,7 +34,7 @@ namespace CrabadaFilter
                 int numberOfMines = int.Parse(Console.ReadLine());
 
                 Console.Write("Enter last reinforcement time (Hours) threshold to query reinforcement history: ");
-                double minReinforcemnentTransTimeHr = double.Parse(Console.ReadLine());
+                double minReinforcementTransTimeHr = double.Parse(Console.ReadLine());
 
                 int stopMineID = startMineID + numberOfMines;
 
@@ -61,9 +52,9 @@ namespace CrabadaFilter
                         //get miner's faction
                         var crabFaction = mineDetails.Defense_Team_Faction;
                         //get last time miner reinforced
-                        double lastReinforceTimeDiffHHour = await FilterNoReinforceAddress(address);
+                        var lastReinforceTimeDiffHHour = await FilterNoReinforceAddress(address);
                         //check to see if last reinforcement time is greater or equal to user specified time.
-                        if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
+                        if (lastReinforceTimeDiffHHour >= minReinforcementTransTimeHr)
                         {
                             Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
                         }
@@ -92,8 +83,7 @@ namespace CrabadaFilter
         public static async Task<MineDto> FilterOwnerAddress(int mineID)
         {
             var crabadaService = _serviceProvider.GetService<ICrabadaService>();
-            var response = await crabadaService.GetMineDetailsAsync(mineID);
-            return response;
+            return await crabadaService.GetMineDetailsAsync(mineID);
         }
 
         /// <summary>
@@ -111,7 +101,7 @@ namespace CrabadaFilter
 
             var crabadaService = _serviceProvider.GetService<ICrabadaService>();
 
-            DateTime currentDate = DateTime.UtcNow;
+            var currentDate = DateTime.UtcNow;
             var response = await crabadaService.GetLendingHistoryAsync(address);
             //check to see if wallet has ever been to tarvern
             var totalRecord = response.TotalRecord;
@@ -140,8 +130,7 @@ namespace CrabadaFilter
             //check to see that address returned is valid
             if (string.IsNullOrWhiteSpace(address))
             {
-                ownerCrabAvailableStatus = true;
-                return ownerCrabAvailableStatus;
+                return true;
             }
 
             var crabadaService = _serviceProvider.GetService<ICrabadaService>();

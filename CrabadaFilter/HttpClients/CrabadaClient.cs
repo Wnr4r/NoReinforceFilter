@@ -3,10 +3,8 @@ using CrabadaFilter.Models;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace CrabadaFilter.HttpClients
-{
-    public class CrabadaClient : ICrabadaClient
-    {
+namespace CrabadaFilter.HttpClients {
+    public class CrabadaClient : ICrabadaClient {
         private readonly HttpClient _httpClient;
 
         public CrabadaClient(HttpClient httpClient)
@@ -14,14 +12,13 @@ namespace CrabadaFilter.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<MineDto> GetMineDetailsAsync(int mineId)
-        {
+        public async Task<MineDto> GetMineDetailsAsync(int mineId) {
             var response = await _httpClient.GetAsync($"mine/{mineId}");
 
             var content = await response.Content.ReadAsStringAsync();
 
 
-            // if (!response.IsSuccessStatusCode) return DataAnswer<MineResponse>
+            if (!response.IsSuccessStatusCode) return new MineDto();
 
 
             content.TryDeserializeObject(out DataAnswer<MineDto> result);
