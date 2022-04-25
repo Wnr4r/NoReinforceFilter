@@ -68,6 +68,11 @@ namespace CrabadaFilter
             {
                 Console.WriteLine($"An error occured: {e.Message}");
             }
+            finally
+            {
+                Console.Write("Press enter to close console");
+                Console.ReadLine();
+            }
             
         }
 
