@@ -1,6 +1,7 @@
 using CrabadaFilter.Extensions;
 using CrabadaFilter.Models;
 using CrabadaFilter.Services;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
@@ -8,14 +9,14 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace CrabadaFilter
 {
     class Program
     {
         private static IServiceProvider _serviceProvider;
+
+        private static ICrabadaService _crabadaService;
         static async Task Main(string[] args)
         {
 
@@ -23,6 +24,8 @@ namespace CrabadaFilter
 
             // await host.RunAsync();
             _serviceProvider = host.Services;
+
+            _crabadaService = _serviceProvider.GetService<ICrabadaService>();
 
             string response = string.Empty;
             do
@@ -43,7 +46,6 @@ namespace CrabadaFilter
 
                     try
                     {
-                        //Console.WriteLine($"Currently Scanning Mine: {i}");
                         //check for owner address and see if it has not yet been looted
                         var mineDetails = await FilterOwnerAddress(i);
                         var address = mineDetails.Owner;
@@ -80,11 +82,7 @@ namespace CrabadaFilter
         /// </summary>
         /// <param name="mineID">Mine ID.</param>
         /// <returns>wallet address of the miner in the given mine ID.</returns>
-        public static async Task<MineDto> FilterOwnerAddress(int mineID)
-        {
-            var crabadaService = _serviceProvider.GetService<ICrabadaService>();
-            return await crabadaService.GetMineDetailsAsync(mineID);
-        }
+        public static async Task<MineDto> FilterOwnerAddress(int mineId) => await _crabadaService.GetMineDetailsAsync(mineId);
 
         /// <summary>
         /// Check the last time that miner reinforced.
@@ -99,10 +97,8 @@ namespace CrabadaFilter
                 return -1;
             }
 
-            var crabadaService = _serviceProvider.GetService<ICrabadaService>();
-
             var currentDate = DateTime.UtcNow;
-            var response = await crabadaService.GetLendingHistoryAsync(address);
+            var response = await _crabadaService.GetLendingHistoryAsync(address);
             //check to see if wallet has ever been to tarvern
             var totalRecord = response.TotalRecord;
             if (totalRecord <= 0)
@@ -111,7 +107,7 @@ namespace CrabadaFilter
             }
 
             var lastReinforcementTime = response.Data[0].Transaction_Time;
-            //var lastReinforcementTimeInHrf = DateTimeOffset.FromUnixTimeSeconds(lastReinforcementTime);
+            //var lastReinforcementTimeInHrf = DateTimeOffset.FromUnixTimeMilliseconds(lastReinforcementTime);
             DateTime lastReinforcementTimeInHrf = new DateTime(1970, 1, 1, 0, 0, 0, 0); //from start epoch time in HRF:Human Readable Forrmat
             lastReinforcementTimeInHrf = lastReinforcementTimeInHrf.AddSeconds(lastReinforcementTime); // update reinforcement using the latest tran_time
             double lastTransacTimeDiffHr = Math.Round((currentDate - lastReinforcementTimeInHrf).TotalDays) * 24;
@@ -133,8 +129,7 @@ namespace CrabadaFilter
                 return true;
             }
 
-            var crabadaService = _serviceProvider.GetService<ICrabadaService>();
-            var response = await crabadaService.GetCanJoinTeamInfoAsync(address);
+            var response = await _crabadaService.GetCanJoinTeamInfoAsync(address);
             int totalRecord = response.TotalRecord;
             if (totalRecord > 0)
             {
