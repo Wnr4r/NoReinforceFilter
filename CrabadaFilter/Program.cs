@@ -12,55 +12,68 @@ namespace CrabadaFilter
     {
         static void Main(string[] args)
         {
-
-            string response = string.Empty;
-            do
+            try
             {
-                Console.Write("Enter starting mine ID: ");
-                int startMineID = Int32.Parse(Console.ReadLine());
-
-                Console.Write("Enter how many additional mines to scan: ");
-                int numberOfMines = Int32.Parse(Console.ReadLine());
-                
-                Console.Write("Enter last reinforcement time (Hours) threshold to query reinforcement history: ");
-                double minReinforcemnentTransTimeHr = Double.Parse(Console.ReadLine());
-                
-                int stopMineID = startMineID + numberOfMines;
-
-                for (int i = startMineID; i <= stopMineID; i++)
+                string response = string.Empty;
+                do
                 {
-                    
-                    try
+
+                    Console.Write("Enter starting mine ID: ");
+                    int startMineID = Int32.Parse(Console.ReadLine());
+
+                    Console.Write("Enter how many additional mines to scan: ");
+                    int numberOfMines = Int32.Parse(Console.ReadLine());
+
+                    Console.Write("Enter last reinforcement time (Hours) threshold to query reinforcement history: ");
+                    double minReinforcemnentTransTimeHr = Double.Parse(Console.ReadLine());
+
+                    int stopMineID = startMineID + numberOfMines;
+
+                    for (int i = startMineID; i <= stopMineID; i++)
                     {
-                        //Console.WriteLine($"Currently Scanning Mine: {i}");
-                        //check for owner address and see if it has not yet been looted
-                        string address = filterOwnerAddress(i);
-                        //if address is empty or miner has own crab for reinforcing, continue to next iteration
-                        if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
-                        //get miner's faction
-                        string crabFaction = minerFaction(i);
-                        //get last time miner reinforced
-                        double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
-                        //check to see if last reinforcement time is greater or equal to user specified time.
-                        if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
+
+                        try
                         {
+                            //Console.WriteLine($"Currently Scanning Mine: {i}");
+                            //check for owner address and see if it has not yet been looted
+                            string address = filterOwnerAddress(i);
+                            //if address is empty or miner has own crab for reinforcing, continue to next iteration
+                            if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
+                            //get miner's faction
+                            string crabFaction = minerFaction(i);
+                            //get last time miner reinforced
+                            double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
+                            //check to see if last reinforcement time is greater or equal to user specified time.
+                            if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
+                            {
                                 Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
-                        } 
-                    } 
+                            }
+                        }
 
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"Error encountered: {e.Message}");
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Error encountered: {e.Message}");
+                        }
+
+                        //sleep after each loop
+                        Thread.Sleep(1000);
                     }
-                    
-                    //sleep after each loop
-                    Thread.Sleep(1000);
-                }
 
-                Console.WriteLine("\n Completed!!!!");
-                Console.Write("\n Do you wish to check another mine ID series? Type yes to continue: ");
-                response = Console.ReadLine();
-            } while (response.ToLower() == "yes");
+                    Console.WriteLine("\n Completed!!!!");
+                    Console.Write("\n Do you wish to check another mine ID series? Type yes to continue: ");
+                    response = Console.ReadLine();
+                } while (response.ToLower() == "yes");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occured: {e.Message}");
+            }
+            finally
+            {
+                Console.Write("Press enter to close console");
+                Console.ReadLine();
+            }
+            
         }
 
         /// <summary>
@@ -149,11 +162,102 @@ namespace CrabadaFilter
             var content = client.DownloadString(url);
             dynamic stuff = JObject.Parse(content);
             int totalRecord = stuff.result.totalRecord;
-            if (totalRecord > 0)
+            
+
+            // check to see if miner has reserve crab in wallet or a reserve crab already in game
+            if (totalRecord > 0 || areCrabsInGame(address))
             {
                 ownerCrabAvailableStatus = true;
             }
             return ownerCrabAvailableStatus;
+        }
+
+
+        // recently added function - 23-04-2022 : checks for crabs in game
+        public static bool areCrabsInGame(string address)
+        {
+            bool ownerCrabInGameStatus = false;
+            int totalRecord;
+            int remainder;
+
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                ownerCrabInGameStatus  = true;
+                return ownerCrabInGameStatus;
+            }
+
+            string url = $"https://idle-api.crabada.com/public/idle/crabadas/in-game?user_address={address}&page=1&limit=100&order=desc&orderBy=mine_point";
+            var client = new WebClient();
+            client.Headers.Add("User-Agent: Other");
+            var content = client.DownloadString(url);
+            dynamic stuff = JObject.Parse(content);
+            // get the totalPages
+            int totalPages = stuff.result.totalPages;
+            // current page
+            int page = stuff.result.page;
+
+            totalRecord = stuff.result.totalRecord;
+            remainder = totalRecord % 3;
+
+            //Console.WriteLine($"Remainder {remainder}");
+            if (remainder != 0)
+            {
+                ownerCrabInGameStatus = true;
+                return ownerCrabInGameStatus;
+            }
+
+            // for a single in-game page
+            if (totalPages == page)
+            {
+                // we need to limit the totalRecord to the index that can be processed
+                for (int i = 0; i < totalRecord; i++)
+                {
+                    string teamID = stuff.result.data[i].team_id;
+                    //Console.WriteLine($" teamID: {teamID}");
+                    if (String.IsNullOrEmpty(teamID))
+                    {
+                        ownerCrabInGameStatus = true;
+                        return ownerCrabInGameStatus;
+                    }
+                }
+            }
+
+            // handles in-game multiple pages when totalPages is > page
+            // this will be rarely executed bcos the probability of lots crabbers having more than 100 records is low
+            if (totalPages > 1)
+            {
+                // loop through each page by calling the api - start from page 1
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    // call the api starting from page 1
+                    url = $"https://idle-api.crabada.com/public/idle/crabadas/in-game?user_address={address}&page={i}&limit=100&order=desc&orderBy=mine_point";
+                    client = new WebClient();
+                    client.Headers.Add("User-Agent: Other");
+                    content = client.DownloadString(url);
+                    stuff = JObject.Parse(content);
+
+                    JArray dataArray = (JArray)stuff.result.data;
+                    //Console.WriteLine($"dataArray: {dataArray.GetType()}");
+                    //Console.WriteLine($"dataArray Length: {dataArray.Count}");
+
+                    //loop through the data for each page
+                    for (int k = 0; k < dataArray.Count; k++)
+                    {
+                        string teamID = stuff.result.data[k].team_id;
+
+                        if (String.IsNullOrEmpty(teamID))
+                        {
+                            ownerCrabInGameStatus = true;
+                            return ownerCrabInGameStatus;
+                        }
+                    }
+
+                }
+
+            }
+
+            return ownerCrabInGameStatus;
+
         }
 
 
