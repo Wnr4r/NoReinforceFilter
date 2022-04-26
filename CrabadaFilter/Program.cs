@@ -76,6 +76,7 @@ namespace CrabadaFilter
             }
             
         }
+        #region Functions
 
         /// <summary>
         /// Check wallet address of the miner.
@@ -196,7 +197,6 @@ namespace CrabadaFilter
             int totalPages = stuff.result.totalPages;
             // current page
             int page = stuff.result.page;
-
             totalRecord = stuff.result.totalRecord;
             remainder = totalRecord % 3;
 
@@ -236,7 +236,6 @@ namespace CrabadaFilter
                     client.Headers.Add("User-Agent: Other");
                     content = client.DownloadString(url);
                     stuff = JObject.Parse(content);
-
                     JArray dataArray = (JArray)stuff.result.data;
                     //Console.WriteLine($"dataArray: {dataArray.GetType()}");
                     //Console.WriteLine($"dataArray Length: {dataArray.Count}");
@@ -260,7 +259,6 @@ namespace CrabadaFilter
             return ownerCrabInGameStatus;
         }
 
-
         /// <summary>
         /// Checks miner's crab faction
         /// </summary>
@@ -279,5 +277,6 @@ namespace CrabadaFilter
             return teamFaction;
             
         }
-     }
- }
+        #endregion
+    }
+}
