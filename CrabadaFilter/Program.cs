@@ -46,7 +46,7 @@ namespace CrabadaFilter
                             //check to see if last reinforcement time is greater or equal to user specified time.
                             if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
                             {
-                                Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
+                                Console.WriteLine($"Faction: {crabFaction} \t MineID: {i} \t Address: {address} \t LastReinforced:  {lastReinforceTimeDiffHHour} Hrs");
                             }
                         }
 
@@ -62,7 +62,8 @@ namespace CrabadaFilter
                     Console.WriteLine("\n Completed!!!!");
                     Console.Write("\n Do you wish to check another mine ID series? Type yes to continue: ");
                     response = Console.ReadLine();
-                } while (response.ToLower() == "yes");
+                } while (response.ToLower().Trim()
+                            .Equals("yes"));
             }
             catch (Exception e)
             {
@@ -257,7 +258,6 @@ namespace CrabadaFilter
             }
 
             return ownerCrabInGameStatus;
-
         }
 
 
@@ -278,19 +278,6 @@ namespace CrabadaFilter
             string teamFaction = stuff.result.defense_team_faction;
             return teamFaction;
             
-        }
-
-        //not used for now
-        public static string queryAPI(string url )
-        {
-            //Thread.Sleep(2000);
-            //string urlu = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
-            var client = new WebClient();
-            client.Headers.Add("User-Agent: Other");
-            var content = client.DownloadString(url);
-            dynamic stuff = JObject.Parse(content);
-            var totalRecord = stuff.result.totalRecord;
-            return string.Empty;
         }
      }
  }
