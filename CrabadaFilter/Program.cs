@@ -49,22 +49,21 @@ namespace CrabadaFilter
 
                         try
                         {
-                            Console.WriteLine($"Currently Scanning Mine: {i}");
+                            //Console.WriteLine($"Currently Scanning Mine: {i}");
                             //get miner's faction
                             string crabFaction = minerFaction(i);
                             if ((lootFaction1 == crabFaction || lootFaction2 == crabFaction) || (lootFaction1 == "" && lootFaction2 == ""))
                             { 
                                 //check for owner address and see if it has not yet been looted
                                 string address = filterOwnerAddress(i);
-                                //if address is empty or miner has own crab for reinforcing, continue to next iteration
-                                if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
                                 //get last time miner reinforced
                                 double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
                                 //check to see if last reinforcement time is greater or equal to user specified time.
-                                if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
-                                {
-                                    Console.WriteLine($"Faction: {crabFaction} \t MineID: {i} \t Address: {address} \t LastReinforced:  {lastReinforceTimeDiffHHour} Hrs");
-                                }
+                                if (lastReinforceTimeDiffHHour < minReinforcemnentTransTimeHr) continue;
+                                //if address is empty or miner has own crab for reinforcing, continue to next iteration
+                                if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
+                                //output if all conditions are met
+                                Console.WriteLine($"Faction: {crabFaction} \t MineID: {i} \t Address: {address} \t LastReinforced:  {lastReinforceTimeDiffHHour} Hrs");
                             }
                         }
 
