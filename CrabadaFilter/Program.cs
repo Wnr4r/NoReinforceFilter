@@ -8,6 +8,15 @@ using Newtonsoft.Json.Linq;
 
 namespace CrabadaFilter
 {
+    //global variables class
+    public static class Globals
+    {
+        //swimmer API baseUrl - https://idle-game-api.crabada.com/public/idle
+        //AVAX APi baseurl - https://idle-api.crabada.com/public/idle
+        public const string baseURL = "https://idle-game-api.crabada.com/public/idle";
+        public const string baseURL2 = "https://idle-api.crabada.com/public/idle";
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -40,7 +49,7 @@ namespace CrabadaFilter
 
                         try
                         {
-                            //Console.WriteLine($"Currently Scanning Mine: {i}");
+                            Console.WriteLine($"Currently Scanning Mine: {i}");
                             //get miner's faction
                             string crabFaction = minerFaction(i);
                             if ((lootFaction1 == crabFaction || lootFaction2 == crabFaction) || (lootFaction1 == "" && lootFaction2 == ""))
@@ -95,7 +104,7 @@ namespace CrabadaFilter
         public static string filterOwnerAddress(int mineID)
         {
             //Thread.Sleep(2000);
-            string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
+            string url = Globals.baseURL+ $"/mine/{mineID}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -132,7 +141,7 @@ namespace CrabadaFilter
             //sleep to avoid ban
             //Thread.Sleep(1000);
             DateTime currentDate = DateTime.UtcNow;
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2";
+            string url = Globals.baseURL + $"/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -167,7 +176,7 @@ namespace CrabadaFilter
             }
             //sleep to avoid ban
             //Thread.Sleep(1000);
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/can-join-team?user_address={address}";
+            string url = Globals.baseURL + $"/crabadas/can-join-team?user_address={address}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -197,7 +206,7 @@ namespace CrabadaFilter
                 return ownerCrabInGameStatus;
             }
 
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/in-game?user_address={address}&page=1&limit=100&order=desc&orderBy=mine_point";
+            string url = Globals.baseURL + $"/crabadas/in-game?user_address={address}&page=1&limit=100&order=desc&orderBy=mine_point";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -240,7 +249,7 @@ namespace CrabadaFilter
                 for (int i = 1; i <= totalPages; i++)
                 {
                     // call the api starting from page 1
-                    url = $"https://idle-api.crabada.com/public/idle/crabadas/in-game?user_address={address}&page={i}&limit=100&order=desc&orderBy=mine_point";
+                    url = Globals.baseURL + $"/crabadas/in-game?user_address={address}&page={i}&limit=100&order=desc&orderBy=mine_point";
                     client = new WebClient();
                     client.Headers.Add("User-Agent: Other");
                     content = client.DownloadString(url);
@@ -277,7 +286,7 @@ namespace CrabadaFilter
         {
         
             //Thread.Sleep(1000);
-            string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
+            string url = Globals.baseURL + $"/mine/{mineID}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
