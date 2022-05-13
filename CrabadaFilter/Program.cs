@@ -19,13 +19,19 @@ namespace CrabadaFilter
                 {
 
                     Console.Write("Enter starting mine ID: ");
-                    int startMineID = Int32.Parse(Console.ReadLine());
+                    int startMineID = Int32.Parse(Console.ReadLine().Trim());
 
                     Console.Write("Enter how many additional mines to scan: ");
-                    int numberOfMines = Int32.Parse(Console.ReadLine());
+                    int numberOfMines = Int32.Parse(Console.ReadLine().Trim());
 
                     Console.Write("Enter last reinforcement time (Hours) threshold to query reinforcement history: ");
-                    double minReinforcemnentTransTimeHr = Double.Parse(Console.ReadLine());
+                    double minReinforcemnentTransTimeHr = Double.Parse(Console.ReadLine().Trim());
+
+                    Console.Write("Enter 1st faction that you want to loot (leave empty if you dont have preferred faction): ");
+                    string lootFaction1 = Console.ReadLine().ToUpper().Trim();
+
+                    Console.Write("Enter 2nd faction that you want to loot (leave empty if you dont have preferred faction): ");
+                    string lootFaction2 = Console.ReadLine().ToUpper().Trim();
 
                     int stopMineID = startMineID + numberOfMines;
 
@@ -35,18 +41,21 @@ namespace CrabadaFilter
                         try
                         {
                             //Console.WriteLine($"Currently Scanning Mine: {i}");
-                            //check for owner address and see if it has not yet been looted
-                            string address = filterOwnerAddress(i);
-                            //if address is empty or miner has own crab for reinforcing, continue to next iteration
-                            if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
                             //get miner's faction
                             string crabFaction = minerFaction(i);
-                            //get last time miner reinforced
-                            double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
-                            //check to see if last reinforcement time is greater or equal to user specified time.
-                            if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
-                            {
-                                Console.WriteLine($"Faction: {crabFaction} \t MineID: {i} \t Address: {address} \t LastReinforced:  {lastReinforceTimeDiffHHour} Hrs");
+                            if ((lootFaction1 == crabFaction || lootFaction2 == crabFaction) || (lootFaction1 == "" && lootFaction2 == ""))
+                            { 
+                                //check for owner address and see if it has not yet been looted
+                                string address = filterOwnerAddress(i);
+                                //if address is empty or miner has own crab for reinforcing, continue to next iteration
+                                if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
+                                //get last time miner reinforced
+                                double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
+                                //check to see if last reinforcement time is greater or equal to user specified time.
+                                if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
+                                {
+                                    Console.WriteLine($"Faction: {crabFaction} \t MineID: {i} \t Address: {address} \t LastReinforced:  {lastReinforceTimeDiffHHour} Hrs");
+                                }
                             }
                         }
 
