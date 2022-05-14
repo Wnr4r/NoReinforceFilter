@@ -8,6 +8,15 @@ using Newtonsoft.Json.Linq;
 
 namespace CrabadaFilter
 {
+    //global variables class
+    public static class Globals
+    {
+        //swimmer API baseUrl - https://idle-game-api.crabada.com/public/idle
+        //AVAX APi baseurl - https://idle-api.crabada.com/public/idle
+        public const string baseURL = "https://idle-game-api.crabada.com/public/idle";
+        public const string baseURL2 = "https://idle-api.crabada.com/public/idle";
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -19,13 +28,19 @@ namespace CrabadaFilter
                 {
 
                     Console.Write("Enter starting mine ID: ");
-                    int startMineID = Int32.Parse(Console.ReadLine());
+                    int startMineID = Int32.Parse(Console.ReadLine().Trim());
 
                     Console.Write("Enter how many additional mines to scan: ");
-                    int numberOfMines = Int32.Parse(Console.ReadLine());
+                    int numberOfMines = Int32.Parse(Console.ReadLine().Trim());
 
                     Console.Write("Enter last reinforcement time (Hours) threshold to query reinforcement history: ");
-                    double minReinforcemnentTransTimeHr = Double.Parse(Console.ReadLine());
+                    double minReinforcemnentTransTimeHr = Double.Parse(Console.ReadLine().Trim());
+
+                    Console.Write("Enter 1st faction that you want to loot (leave empty if you dont have preferred faction): ");
+                    string lootFaction1 = Console.ReadLine().ToUpper().Trim();
+
+                    Console.Write("Enter 2nd faction that you want to loot (leave empty if you dont have preferred faction): ");
+                    string lootFaction2 = Console.ReadLine().ToUpper().Trim();
 
                     int stopMineID = startMineID + numberOfMines;
 
@@ -35,18 +50,20 @@ namespace CrabadaFilter
                         try
                         {
                             //Console.WriteLine($"Currently Scanning Mine: {i}");
-                            //check for owner address and see if it has not yet been looted
-                            string address = filterOwnerAddress(i);
-                            //if address is empty or miner has own crab for reinforcing, continue to next iteration
-                            if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
                             //get miner's faction
                             string crabFaction = minerFaction(i);
-                            //get last time miner reinforced
-                            double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
-                            //check to see if last reinforcement time is greater or equal to user specified time.
-                            if (lastReinforceTimeDiffHHour >= minReinforcemnentTransTimeHr)
-                            {
-                                Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
+                            if ((lootFaction1 == crabFaction || lootFaction2 == crabFaction) || (lootFaction1 == "" && lootFaction2 == ""))
+                            { 
+                                //check for owner address and see if it has not yet been looted
+                                string address = filterOwnerAddress(i);
+                                //get last time miner reinforced
+                                double lastReinforceTimeDiffHHour = filterNoReinforceAddress(address);
+                                //check to see if last reinforcement time is greater or equal to user specified time.
+                                if (lastReinforceTimeDiffHHour < minReinforcemnentTransTimeHr) continue;
+                                //if address is empty or miner has own crab for reinforcing, continue to next iteration
+                                if (string.IsNullOrWhiteSpace(address) || isCrabAvailable(address)) continue;
+                                //output if all conditions are met
+                                Console.WriteLine($"Faction: {crabFaction} \t MineID: {i} \t Address: {address} \t LastReinforced:  {lastReinforceTimeDiffHHour} Hrs");
                             }
                         }
 
@@ -62,7 +79,8 @@ namespace CrabadaFilter
                     Console.WriteLine("\n Completed!!!!");
                     Console.Write("\n Do you wish to check another mine ID series? Type yes to continue: ");
                     response = Console.ReadLine();
-                } while (response.ToLower() == "yes");
+                } while (response.ToLower().Trim()
+                            .Equals("yes"));
             }
             catch (Exception e)
             {
@@ -75,6 +93,7 @@ namespace CrabadaFilter
             }
             
         }
+        #region Functions
 
         /// <summary>
         /// Check wallet address of the miner.
@@ -84,7 +103,7 @@ namespace CrabadaFilter
         public static string filterOwnerAddress(int mineID)
         {
             //Thread.Sleep(2000);
-            string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
+            string url = Globals.baseURL+ $"/mine/{mineID}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -121,7 +140,7 @@ namespace CrabadaFilter
             //sleep to avoid ban
             //Thread.Sleep(1000);
             DateTime currentDate = DateTime.UtcNow;
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2";
+            string url = Globals.baseURL + $"/crabadas/lending/history?borrower_address={address}&orderBy=transaction_time&order=desc&limit=2";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -156,7 +175,7 @@ namespace CrabadaFilter
             }
             //sleep to avoid ban
             //Thread.Sleep(1000);
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/can-join-team?user_address={address}";
+            string url = Globals.baseURL + $"/crabadas/can-join-team?user_address={address}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -186,7 +205,7 @@ namespace CrabadaFilter
                 return ownerCrabInGameStatus;
             }
 
-            string url = $"https://idle-api.crabada.com/public/idle/crabadas/in-game?user_address={address}&page=1&limit=100&order=desc&orderBy=mine_point";
+            string url = Globals.baseURL + $"/crabadas/in-game?user_address={address}&page=1&limit=100&order=desc&orderBy=mine_point";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -195,7 +214,6 @@ namespace CrabadaFilter
             int totalPages = stuff.result.totalPages;
             // current page
             int page = stuff.result.page;
-
             totalRecord = stuff.result.totalRecord;
             remainder = totalRecord % 3;
 
@@ -230,12 +248,11 @@ namespace CrabadaFilter
                 for (int i = 1; i <= totalPages; i++)
                 {
                     // call the api starting from page 1
-                    url = $"https://idle-api.crabada.com/public/idle/crabadas/in-game?user_address={address}&page={i}&limit=100&order=desc&orderBy=mine_point";
+                    url = Globals.baseURL + $"/crabadas/in-game?user_address={address}&page={i}&limit=100&order=desc&orderBy=mine_point";
                     client = new WebClient();
                     client.Headers.Add("User-Agent: Other");
                     content = client.DownloadString(url);
                     stuff = JObject.Parse(content);
-
                     JArray dataArray = (JArray)stuff.result.data;
                     //Console.WriteLine($"dataArray: {dataArray.GetType()}");
                     //Console.WriteLine($"dataArray Length: {dataArray.Count}");
@@ -257,9 +274,7 @@ namespace CrabadaFilter
             }
 
             return ownerCrabInGameStatus;
-
         }
-
 
         /// <summary>
         /// Checks miner's crab faction
@@ -270,7 +285,7 @@ namespace CrabadaFilter
         {
         
             //Thread.Sleep(1000);
-            string url = $"https://idle-api.crabada.com/public/idle/mine/{mineID}";
+            string url = Globals.baseURL + $"/mine/{mineID}";
             var client = new WebClient();
             client.Headers.Add("User-Agent: Other");
             var content = client.DownloadString(url);
@@ -279,18 +294,6 @@ namespace CrabadaFilter
             return teamFaction;
             
         }
-
-        //not used for now
-        public static string queryAPI(string url )
-        {
-            //Thread.Sleep(2000);
-            //string urlu = $"https://idle-api.crabada.com/public/idle/crabadas/lending?borrower_address={address}&limit=100";
-            var client = new WebClient();
-            client.Headers.Add("User-Agent: Other");
-            var content = client.DownloadString(url);
-            dynamic stuff = JObject.Parse(content);
-            var totalRecord = stuff.result.totalRecord;
-            return string.Empty;
-        }
-     }
- }
+        #endregion
+    }
+}
