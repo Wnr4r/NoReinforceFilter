@@ -17,7 +17,7 @@ namespace CrabadaFilter.Configurations {
         /// <param name="settings"></param>
         public static void RegisterHttpClients(this IServiceCollection services, CrabadaSettings settings)
         {
-            var productValue = new ProductInfoHeaderValue("Other", "1.0");
+            var productValue = new ProductInfoHeaderValue("Netcard", "1.0");
 
             services.AddHttpClient<ICrabadaClient, CrabadaClient>(client =>
             {

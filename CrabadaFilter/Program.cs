@@ -56,9 +56,12 @@ namespace CrabadaFilter
                         //get last time miner reinforced
                         var lastReinforceTimeDiffHHour = await FilterNoReinforceAddress(address);
                         //check to see if last reinforcement time is greater or equal to user specified time.
-                        if (lastReinforceTimeDiffHHour >= minReinforcementTransTimeHr)
+                        if (crabFaction.ToLower().Equals("machine") || crabFaction.ToLower().Equals("lux"))
                         {
-                            Console.WriteLine($"CrabFaction: {crabFaction} \t MineID: {i} \t OwnerAdress: {address} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
+                            if (lastReinforceTimeDiffHHour >= minReinforcementTransTimeHr)
+                            {
+                                Console.WriteLine($"MineID: {i} \t OwnerAdress: {address} \t CrabFaction: {crabFaction} \t LastReinforceTime:  {lastReinforceTimeDiffHHour} Hrs");
+                            }
                         }
                     }
 
@@ -80,7 +83,7 @@ namespace CrabadaFilter
         /// <summary>
         /// Check wallet address of the miner.
         /// </summary>
-        /// <param name="mineID">Mine ID.</param>
+        /// <param name="mineId ">Mine ID.</param>
         /// <returns>wallet address of the miner in the given mine ID.</returns>
         public static async Task<MineDto> FilterOwnerAddress(int mineId) => await _crabadaService.GetMineDetailsAsync(mineId);
 
@@ -124,10 +127,7 @@ namespace CrabadaFilter
         {
             bool ownerCrabAvailableStatus = false;
             //check to see that address returned is valid
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                return true;
-            }
+            if (string.IsNullOrWhiteSpace(address)) return true;
 
             var response = await _crabadaService.GetCanJoinTeamInfoAsync(address);
             int totalRecord = response.TotalRecord;
